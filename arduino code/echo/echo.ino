@@ -4,7 +4,7 @@
 #include <ESP8266WebServer.h>
 #include <ESP8266HTTPClient.h>
 #include <FirebaseArduino.h>
-#include <SoftwareSerial.h>
+//#include <SoftwareSerial.h>
 
 #define FIREBASE_HOST "automatic-dam.firebaseio.com"
 #define FIREBASE_AUTH "3rxeL5tbMRMQn7qecowaJumq9XDd7MRH1DS6Hd3l"
@@ -14,7 +14,7 @@
 //#define WIFI_PASSWORD "dimidimi"
 
 //SoftwareSerial HC12(D11, D12);
-SoftwareSerial in(D4, D3);
+//SoftwareSerial in(D4, D3);
 
 HTTPClient http;
 //WiFiClient client;
