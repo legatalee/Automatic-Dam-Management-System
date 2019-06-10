@@ -22,7 +22,9 @@ HTTPClient http;
 void setup() {
   pinMode(D1, OUTPUT);
   pinMode(D2, OUTPUT);
-  pinMode(2, OUTPUT);
+  pinMode(D6, OUTPUT);
+  pinMode(D5, INPUT);
+
   Serial.begin(115200);
   //  HC12.begin(9600);
 
@@ -46,15 +48,12 @@ String path;
 String data;
 int cnt = 0;
 
+unsigned long prev_time = 0;
+float duration, level;
+
 void loop() {
   String path = "";
   String data = "";
-  String sensor = "";
-
-  while (in.available()) {
-    sensor += (char) in.read();
-    delay(1);
-  }
 
   if (Firebase.available()) {
     FirebaseObject event = Firebase.readEvent();
@@ -96,20 +95,29 @@ void loop() {
     digitalWrite(D2, LOW);
     removeData(path);
   }
-  Serial.println(sensor);
-  String postData = "data=" + sensor;
-  Serial.println("get in");
-  HTTPClient http;
-  http.begin("http://172.16.2.31/stat/data");
-  //  http.begin("http://49.247.130.104/stat/data");
-  http.addHeader("Content-Type", "application/x-www-form-urlencoded");
-  int httpResponseCode = http.POST(postData);
-  http.POST(postData);
-  http.end();
-  //  client.println(postData);
 
-  cnt++;
-  Serial.println(cnt);
+  digitalWrite(D6, HIGH);
+  unsigned long current_time = millis();
+  if (current_time - prev_time > 15) {
+    digitalWrite(D6, LOW);
+    duration = pulseIn(D5, HIGH);
+    level = map(duration, 800, 50, 0, 180);
+    if (level < 0)level = 0;
+    String echo = String(level / 10);
+    echo = echo.substring(0, echo.length() - 1);
+
+    String postData = "data=" + String(analogRead(A0) * (5.0 / 1024.0)) + ',' + echo;
+    Serial.println(postData);
+
+    HTTPClient http;
+    http.begin("http://172.16.2.31/stat/data");
+    http.addHeader("Content-Type", "application/x-www-form-urlencoded");
+    int httpResponseCode = http.POST(postData);
+    http.POST(postData);
+    http.end();
+
+    prev_time = millis();
+  }
 }
 
 void removeData(String path) {
