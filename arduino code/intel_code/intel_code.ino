@@ -1,15 +1,12 @@
-#include <WiFiClient.h>
-#include <WiFiServer.h>
 #include <ESP8266WiFi.h>
-#include <ESP8266WebServer.h>
-#include <ESP8266HTTPClient.h>
+#include <WiFiUDP.h>
+
 #include <FirebaseArduino.h>
 //#include <SoftwareSerial.h>
 
 #define FIREBASE_HOST "automatic-dam.firebaseio.com"
 #define FIREBASE_AUTH "3rxeL5tbMRMQn7qecowaJumq9XDd7MRH1DS6Hd3l"
-//#define dataUrl "http://49.247.130.104/stat/data"
-//#define dataUrl "http://192.168.23.1/stat/data"
+
 //#define WIFI_SSID "legatalee_laptop"
 //#define WIFI_PASSWORD "dnflwlq4!"
 //#define WIFI_SSID "DimiFi_2G"
@@ -17,11 +14,7 @@
 #define WIFI_SSID "dimi_flow_ai"
 #define WIFI_PASSWORD "dimidimi"
 
-//SoftwareSerial HC12(D11, D12);
-//SoftwareSerial in(D4, D3);
-
-HTTPClient http;
-//WiFiClient client;
+WiFiUDP Udp;
 
 void setup() {
   pinMode(D7, OUTPUT);
@@ -30,7 +23,6 @@ void setup() {
   pinMode(D1, INPUT);
 
   Serial.begin(115200);
-  //  HC12.begin(9600);
 
   WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
   Serial.print("connecting");
@@ -41,6 +33,8 @@ void setup() {
   Serial.println();
   Serial.print("connected: ");
   Serial.println(WiFi.localIP());
+
+  Udp.begin(12345);
 
   Firebase.begin(FIREBASE_HOST, FIREBASE_AUTH);
   delay(50);
@@ -113,12 +107,9 @@ void loop() {
     String postData = "data=" + echo + ',' + String(analogRead(A0) * (5.0 / 1024.0));
     Serial.println(postData);
 
-    HTTPClient http;
-    http.begin("http://192.168.137.1/stat/data");
-    http.addHeader("Content-Type", "application/x-www-form-urlencoded");
-    int httpResponseCode = http.POST(postData);
-    http.POST(postData);
-    http.end();
+    Udp.beginPacket("192.168.137.1", 3000);
+    Udp.write(postData.c_str());
+    Udp.endPacket();
 
     prev_time = millis();
   }
