@@ -19,6 +19,7 @@ WiFiUDP Udp;
 void setup() {
   pinMode(D7, OUTPUT);
   pinMode(D6, OUTPUT);
+   pinMode(D3, OUTPUT);
   pinMode(D2, OUTPUT);
   pinMode(D1, INPUT);
 
@@ -68,11 +69,11 @@ void loop() {
   }
 
   if (data == "on1") {
-    digitalWrite(D7, HIGH);
+    digitalWrite(D3, HIGH);
     removeData(path);
   }
   if (data == "off1") {
-    digitalWrite(D7, LOW);
+    digitalWrite(D3, LOW);
     removeData(path);
   }
   if (data == "on2") {
@@ -104,8 +105,9 @@ void loop() {
     if (level < 0)level = 0; echo = String(level / 10);
     echo = echo.substring(0, echo.length() - 1);
 
-    String postData = "data=" + echo + ',' + String(analogRead(A0) * (5.0 / 1024.0));
-    Serial.println(postData);
+    String postData = echo + ',' + String(analogRead(A0) * (5.0 / 1024.0));
+    String debug = "water level : " + echo + ",  turbidity : " + String(analogRead(A0) * (5.0 / 1024.0));
+    Serial.println(debug);
 
     Udp.beginPacket("192.168.137.1", 3000);
     Udp.write(postData.c_str());
